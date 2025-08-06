@@ -6,16 +6,20 @@
 
   <form action="/upload-story" method="POST" enctype="multipart/form-data" class="upload-form">
     
-    <label for="storyImage">Take a picture or video (Front Camera):</label>
+    <label for="storyImage">Take a picture or video (IN Mobile):</label>
     <input
       type="file"
       name="storyImage"
       id="storyImage"
       accept="image/*,video/*"
       capture="user"
-      required
     >
-
+ <input
+      type="file"
+      name="storyImage"
+      id="storyImage"
+      accept="image/*,video/*"
+    >
     <button type="submit" class="upload-btn">Upload Story</button>
   </form>
 </div>
