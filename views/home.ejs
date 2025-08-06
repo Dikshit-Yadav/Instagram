@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Home Feed</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+  <header class="navbar">
+    <div class="nav-logo">MyInstagram</div>
+    <nav>
+      <a href="/profile"><i class="fas fa-user"></i> Profile</a>
+      <a href="/posts/upload"><i class="fas fa-plus"></i> Upload</a>
+      <a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </nav>
+  </header>
+
+  <section class="stories-bar">
+    <% if (stories && stories.length > 0) { %>
+      <% stories.forEach(s => { %>
+        <div class="story-preview">
+          <img src="/uploads/<%= s.user.profilePic %>" alt="story" class="story-img" />
+          <p><%= s.user.username %></p>
+        </div>
+      <% }) %>
+    <% } else { %>
+      <p>No stories yet.</p>
+    <% } %>
+  </section>
+
+  <main class="feed">
+    <% posts.forEach(post => { %>
+      <div class="post">
+        <div class="post-header">
+          <img src="<%= post.userId.profilePic %>" alt="Profile Pic" class="avatar">
+          <span class="username"><%= post.userId.username %></span>
+        </div>
+
+        <img src="<%= post.postImage %>" alt="Post Image" class="post-img">
+
+        <div class="post-actions">
+          <form action="/posts/<%= post._id %>/like" method="POST">
+            <button type="submit" class="like-btn">
+              <i class="fa<%= post.likes.includes(user._id) ? 's' : 'r' %> fa-heart"></i>
+              <span><%= post.likes.length %></span>
+            </button>
+          </form>
+        </div>
+
+        <div class="post-caption">
+          <strong><%= post.userId.username %></strong> <%= post.caption %>
+        </div>
+
+        <div class="comments">
+          <% post.comments.forEach(c => { %>
+            <p><strong><%= c.user.username || 'User' %>:</strong> <%= c.text %></p>
+          <% }) %>
+        </div>
+
+        <form action="/posts/<%= post._id %>/comment" method="POST" class="comment-form">
+          <input type="text" name="comment" placeholder="Add a comment..." required>
+          <button type="submit">Post</button>
+        </form>
+      </div>
+    <% }) %>
+  </main>
+</body>
+</html>

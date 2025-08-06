@@ -1,0 +1,283 @@
+<%- include('partials/header', { title: user.username + "'s Profile" }) %>
+  <%- include('partials/sidebar') %>
+
+    <div class="profile-container">
+
+      <div class="profile-header">
+        <h1>
+          <%= user.username %>'s Profile
+        </h1>
+        <a href="/settings" class="settings-button">⚙️ Settings</a>
+
+        <button class="upload-reel-btn" onclick="openDeleteModal()">Delete Account</button>
+        <div id="deleteModal" class="modal">
+          <div class="modal-content">
+            <span class="close" onclick="closeDeleteModal()">&times;</span>
+            <h3>Confirm Account Deletion</h3>
+            <p>Are you sure you want to delete your account? This action cannot be unDo.</p>
+            <form action="/delete" method="GET">
+              <button type="submit" class="confirm-delete">Yes, delete</button>
+              <button type="button" onclick="closeDeleteModal()">Cancel</button>
+            </form>
+          </div>
+        </div>
+
+
+      </div>
+
+      <div class="profile-top">
+        <div class="profile-image">
+          <img src="/uploads/<%= user.profilePic %>" alt="Profile Picture" class="profile-pic">
+        </div>
+
+        <div class="profile-info">
+          <div class="profile-username">
+            <h2>
+              <%= user.username %>
+            </h2>
+
+            <% if (isOwnProfile) { %>
+              <a href="/edit-profile" class="edit-btn">Edit Profile</a>
+              <% } else { %>
+                <% if (user._id.toString() !==loggedInUserId) { %>
+                  <% if (isFollowing) { %>
+                    <form action="/unfollow/<%= user._id %>" method="POST">
+                      <button type="submit" class="unfollow-button">Unfollow</button>
+                    </form>
+                    <% } else { %>
+                      <form action="/follow/<%= user._id %>" method="POST">
+                        <button type="submit" class="follow-button">Follow</button>
+                      </form>
+                      <% } %>
+                        <% } %>
+                          <% } %>
+          </div>
+          <% let reelsLen=reels.length; let postsLen=posts.length; let total=reelsLen + postsLen %>
+            <div class="profile-stats">
+              <div class="stat">
+                <strong>
+                  <%= total %>
+                </strong> posts
+              </div>
+              <div class="stat">
+                <a href="#" onclick="openFollowersModal()">
+                  <strong><a href="/profile/<%= user.username %>/followers">
+                      <%= user.followers.length %>
+                    </a></strong> followers
+                </a>
+              </div>
+              <div class="stat">
+                <a href="#" onclick="openFollowingModal()">
+                  <strong><a href="/profile/<%= user.username %>/following">
+                      <%= user.following.length %>
+                    </a></strong> following
+                </a>
+              </div>
+              <% if (!isOwnProfile) { %>
+                <form action="/chat/start" method="POST">
+                  <input type="hidden" name="receiverId" value="<%= user._id %>" />
+                  <textarea name="content" placeholder="Write a message..." required></textarea>
+                  <button type="submit">Send Message</button>
+                </form>
+                <% } %>
+            </div>
+
+            <div class="profile-bio">
+              <p>
+                <%= user.bio || 'No bio yet.' %>
+              </p>
+            </div>
+
+        </div>
+      </div>
+
+      <% if (isOwnProfile) { %>
+        <form action="/upload-profile-pic" method="POST" enctype="multipart/form-data" class="profile-pic-upload">
+          <input type="file" name="profilePic" accept="image/*" />
+          <button type="submit">Upload New Profile Picture</button>
+        </form>
+        <% } %>
+
+          <div class="profile-tabs">
+            <a href="#posts" class="tab active" onclick="showTab('posts')">Posts<a>
+                <a href="#reels" class="tab" onclick="showTab('reels')">Reels</a>
+                <a href="#saved" class="tab" onclick="showTab('saved')">Saved</a>
+          </div>
+          <div id="posts" class="tab-content active">
+            <div class="posts-grid">
+              <% if (posts.length> 0) { %>
+                <% posts.forEach(post=> { %>
+                  <div class="post" onclick="openPost('<%= post._id %>')">
+                    <% if (post.postImage) { %>
+                      <img src="<%= post.postImage %>" alt="Post" />
+                      <% } %>
+                        <p>
+                          <%= post.caption %>
+                        </p>
+                  </div>
+                  <% }) %>
+                    <% } else { %>
+                      <p>No posts yet</p>
+                      <% } %>
+                        <% reels.forEach(reel=> { %>
+                          <div class="reel" onclick="openReel('<%= reel._id %>')">
+                            <video autoplay muted loop playsinline class="reel-video" id="reel-<%= reel._id %>">
+                              <source src="/uploads/reels/<%= reel.video %>" type="video/mp4">
+                            </video>
+
+                            <p>
+                              <%= reel.caption %>
+                            </p>
+                          </div>
+                          <% }) %>
+            </div>
+          </div>
+
+          <div id="reels" class="tab-content">
+            <div class="reels-section">
+              <% if (reels.length> 0) { %>
+                <% reels.forEach(reel=> { %>
+                  <div class="reel">
+                    <video autoplay muted loop playsinline class="reel-video" id="reel-<%= reel._id %>">
+                      <source src="/uploads/reels/<%= reel.video %>" type="video/mp4">
+                    </video>
+                    <button class="volume-btn" onclick="toggleMute('<%= reel._id %>')">
+                      🔈
+                    </button>
+                    <p>
+                      <%= reel.caption %>
+                    </p>
+                  </div>
+                  <% }) %>
+                    <% } else { %>
+                      <p>No reels uploaded yet</p>
+                      <% } %>
+            </div>
+          </div>
+
+          <div id="saved" class="tab-content">
+            <div class="profile-saved-posts">
+              <% savedPosts.forEach(post=> { %>
+                <div class="post-item">
+                  <img src="<%= post.postImage %>" alt="Saved Post">
+                </div>
+                <% }) %>
+
+            </div>
+          </div>
+
+    </div>
+
+    <div id="followersModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeFollowersModal()">&times;</span>
+        <h2>Followers</h2>
+        <ul>
+          <% user.followers.forEach(follower=> { %>
+            <li>
+              <%= follower.username %>
+            </li>
+            <% }) %>
+        </ul>
+      </div>
+    </div>
+
+    <div id="followingModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeFollowingModal()">&times;</span>
+        <h2>Following</h2>
+        <ul>
+          <% user.following.forEach(following=> { %>
+            <li>
+              <%= following.username %>
+            </li>
+            <% }) %>
+        </ul>
+      </div>
+    </div>
+
+    <div id="postModal" class="post-modal">
+      <div class="modal-content">
+        <span class="close-btn" onclick="closeModalpost()">×</span>
+        <div id="modal-body">
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function openDeleteModal() {
+        document.body.style.overflow = 'hidden';
+        document.getElementById('deleteModal').style.display = 'block';
+      }
+
+      function closeDeleteModal() {
+        document.body.style.overflow = 'auto';
+        document.getElementById('deleteModal').style.display = 'none';
+      }
+
+
+
+      function toggleMute(reelId) {
+        const video = document.getElementById(`reel-${reelId}`);
+        const button = event.target;
+
+        if (video.muted) {
+          video.muted = false;
+          button.textContent = "🔊";
+        } else {
+          video.muted = true;
+          button.textContent = "🔈";
+        }
+      }
+
+
+      async function openPost(postId) {
+        const res = await fetch(`/post/${postId}`);
+        const html = await res.text();
+        document.getElementById('modal-body').innerHTML = html;
+        document.getElementById('postModal').style.display = 'flex';
+      }
+
+      async function openReel(reelId) {
+        const res = await fetch(`/reel/${reelId}`);
+        const html = await res.text();
+        document.getElementById('modal-body').innerHTML = html;
+        document.getElementById('postModal').style.display = 'flex';
+      }
+
+      function closeModalpost() {
+        document.getElementById('postModal').style.display = 'none';
+      }
+
+
+      function openFollowersModal() {
+        document.getElementById('followersModal').style.display = 'block';
+      }
+      function closeFollowersModal() {
+        document.getElementById('followersModal').style.display = 'none';
+      }
+      function openFollowingModal() {
+        document.getElementById('followingModal').style.display = 'block';
+      }
+      function closeFollowingModal() {
+        document.getElementById('followingModal').style.display = 'none';
+      }
+
+      function showTab(tabId) {
+        const tabContents = document.querySelectorAll('.tab-content');
+        const tabs = document.querySelectorAll('.tab');
+
+        tabContents.forEach(content => {
+          content.classList.remove('active');
+        });
+
+        tabs.forEach(tab => {
+          tab.classList.remove('active');
+        });
+
+        document.getElementById(tabId).classList.add('active');
+        document.querySelector(`[href="#${tabId}"]`).classList.add('active');
+      }
+    </script>
+
+    <%- include('partials/footer') %>

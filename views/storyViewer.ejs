@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= story.user.username %>'s Story
+    </title>
+    <link rel="stylesheet" href="/css/storyViewer.css">
+</head>
+
+<body>
+    <%- include('partials/header', { title: 'Search Profile' }) %>
+        <%- include('partials/sidebar') %>
+            <div class="story-viewer">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+
+                <div class="story-content">
+                    <% if (story.media.includes('.mp4')) { %>
+                        <video  autoplay>
+                            <source src="<%= story.media %>" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <% } else { %>
+                            <img src="<%= story.media %>" alt="Story" draggable="false">
+                            <% } %>
+                                <div class="viewed-by">
+    <strong>Viewed by:</strong>
+    <% if (story.user && story.user._id.toString() === userId.toString()) { %>
+        <ul>
+            <% story.views.forEach(viewer => { %>
+                <li class="<%= viewer._id.toString() === userId.toString() ? 'current-user' : '' %>">
+                    @<%= viewer.username %>
+                </li>
+            <% }) %>
+        </ul>
+    <% } else { %>
+        <p>You cannot see the viewers of this story.</p>
+    <% } %>
+</div>
+
+                </div>
+
+                <div class="story-navigation">
+                    <button class="prev-btn" onclick="navigateStory(nextStoryId)"><</button>
+                    <button class="next-btn" onclick="navigateStory(prevStoryId)">></button>
+                </div>
+
+                <button onclick="closeViewer()" class="close-btn">×</button>
+            </div>
+
+            <script>
+                const prevStoryId = "<%= prevStory ? prevStory._id : '' %>";
+                const nextStoryId = "<%= nextStory ? nextStory._id : '' %>";
+
+                function closeViewer() {
+                    window.location.href = '/dashboard';
+                }
+
+                function navigateStory(storyId) {
+                    if (storyId) {
+                        window.location.href = `/story/${storyId}`;
+                    }
+                }
+
+                const duration = 15000;
+                const progressFill = document.getElementById('progressFill');
+
+                function startProgressBar() {
+                    progressFill.style.transition = `width ${duration}ms linear`;
+                    progressFill.style.width = '100%';
+
+                    setTimeout(() => {
+                        if (nextStoryId) {
+                            window.location.href = '/story/' + nextStoryId;
+                        } else {
+                            closeViewer();
+                        }
+                    }, duration);
+                }
+
+                window.onload = startProgressBar;
+            </script>
+
+</body>
+
+</html>

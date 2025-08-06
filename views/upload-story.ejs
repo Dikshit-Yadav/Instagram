@@ -1,0 +1,21 @@
+<%- include('partials/header', { title: 'Upload Story' }) %>
+<%- include('partials/sidebar') %>
+
+<div class="upload-story-container">
+  <h1>Upload a Story</h1>
+
+  <form action="/upload-story" method="POST" enctype="multipart/form-data" class="upload-form">
+    
+    <label for="storyImage">Take a picture or video (Front Camera):</label>
+    <input
+      type="file"
+      name="storyImage"
+      id="storyImage"
+      accept="image/*,video/*"
+      capture="user"
+      required
+    >
+
+    <button type="submit" class="upload-btn">Upload Story</button>
+  </form>
+</div>
